@@ -1,40 +1,41 @@
-import { save, load } from './localStorage';
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
 
-const form = document.querySelector('.js-feedback-form');
-const formData = {
-email: '',
-message: '',
-};
 
-const fillForm = () => {
-const savedData = load('feedback-form-state');
-if (!savedData) return;
+const form = document.querySelector(".form");
 
-form.email.value = savedData.email || '';
-form.message.value = savedData.message || '';
-Object.assign(formData, savedData);
-};
 
-form.addEventListener('input', (event) => {
-const { name, value } = event.target;
-formData[name] = value.trim();
-save('feedback-form-state', formData);
+form.addEventListener("submit", (event) => {
+  event.preventDefault(); 
+
+  const delay = parseInt(event.target.elements.delay.value, 10); 
+  const state = event.target.elements.state.value; 
+
+  createPromise(delay, state)
+    .then((message) => {
+      iziToast.success({
+        title: "Success",
+        message: message,
+        position: "topRight",
+      });
+    })
+    .catch((message) => {
+      iziToast.error({
+        title: "Error",
+        message: message,
+        position: "topRight",
+      });
+    });
 });
 
-form.addEventListener('submit', (event) => {
-event.preventDefault();
-
-if (!formData.email || !formData.message) {
-alert('Будь ласка, заповніть усі поля');
-return;
+function createPromise(delay, state) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (state === "fulfilled") {
+        resolve(`✅ Fulfilled promise in ${delay}ms`);
+      } else {
+        reject(`❌ Rejected promise in ${delay}ms`);
+      }
+    }, delay);
+  });
 }
-
-console.log(formData);
-
-localStorage.removeItem('feedback-form-state');
-form.reset();
-formData.email = '';
-formData.message = '';
-});
-
-fillForm();
